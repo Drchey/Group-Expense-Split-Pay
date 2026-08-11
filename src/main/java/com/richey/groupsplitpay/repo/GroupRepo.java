@@ -12,6 +12,8 @@ public interface GroupRepo extends JpaRepository<Group, Integer> {
 
     boolean existsByUserIdAndName(Integer user_id, String name);
 
+    boolean existsByIdAndName(Integer group_id, String name);
+
     List<Group> findAllByUserId(Integer user_id);
 
     Optional<Group> findByIdAndUserId(Integer id, Integer user_id);

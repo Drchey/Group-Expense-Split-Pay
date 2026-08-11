@@ -27,7 +27,6 @@ public class GroupService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         if (groupRepo.existsByUserIdAndName(userId, request.name())) {
-            System.out.println("Same Type");
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Group with this name already exists");
         }
 
@@ -63,10 +62,53 @@ public class GroupService {
     }
 
     /** Get A Specific Group from UserId */
-//    public GroupResponse listGroupById(Integer userId, Integer GroupId){
-////        Integer currentUserId = securityUtils.
-//    }
+    public GroupResponse listGroupById(Integer groupId, Integer userId){
+        Group group =  groupRepo.findByIdAndUserId(groupId, userId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Group Not Found"));
+
+        return new GroupResponse(
+                group.getId(),
+                group.getName(),
+                group.getDescription(),
+                group.getUser().getId(),
+                group.getCreatedAt()
+        );
+    }
 
     /** Update Group */
+    public GroupResponse updateGroupById(GroupRequest request, Integer groupId, Integer userId){
+        Group group =  groupRepo.findByIdAndUserId(groupId, userId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Group Not Found"));
+
+        // Check if its Unique
+        if (groupRepo.existsByUserIdAndName(userId, request.name())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Group with this name already exists");
+        }
+
+        group.setName(request.name());
+        group.setDescription(request.description());
+
+        Group updatedGroup = groupRepo.save(group);
+
+        return new GroupResponse(
+                updatedGroup.getId(),
+                updatedGroup.getName(),
+                updatedGroup.getDescription(),
+                updatedGroup.getUser().getId(),
+                updatedGroup.getCreatedAt()
+        );
+
+
+    }
+
+
     /** Delete Group */
+    public void deleteGroupByOwner(Integer groupId, Integer userId){
+
+        Group group =  groupRepo.findByIdAndUserId(groupId, userId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Group Not Found"));
+
+        groupRepo.deleteById(group.getId());
+
+    }
 }
