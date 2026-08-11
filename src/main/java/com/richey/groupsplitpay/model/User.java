@@ -34,7 +34,7 @@ public class User implements UserDetails {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Group> groups;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @Column(nullable = false, updatable = false)
