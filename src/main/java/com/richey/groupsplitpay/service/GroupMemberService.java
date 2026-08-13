@@ -37,6 +37,7 @@ public class GroupMemberService {
         boolean isMember = groupMemberRepo.existsByGroupIdAndUserId(groupId, userId);
 
         if (!isMember) {
+            System.out.println("You are not a Member of this group");
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You're not a member of this group");
         }
 
@@ -76,8 +77,11 @@ public class GroupMemberService {
      /**Add GroupMember */
      @Transactional
      public  GroupMemberResponse addGroupMemberToGroup(Integer groupId, Integer requestingUserId, Integer newUserId){
+         System.out.println(groupId);
          GroupMember requesterMembership = groupMemberRepo.findByGroupIdAndUserId(groupId, requestingUserId)
-                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "You're not a member of this group"));
+                 .orElseThrow(() -> {
+                     return new ResponseStatusException(HttpStatus.FORBIDDEN, "You're not a member of this group");
+                 });
 
          // Check if Existing Member is admin
          if(requesterMembership.getRole() != GroupRole.ADMIN){
@@ -91,11 +95,13 @@ public class GroupMemberService {
 
          // Check if user already exists in group
          if (groupMemberRepo.existsByGroupIdAndUserId(groupId, newUserId)) {
+             System.out.println("Not a Member " + requesterMembership.getRole() + " : " + GroupRole.ADMIN );
              throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a member of this group");
          }
 
          // Get the Group
          Group group = groupRepo.findById(groupId)
+
                  .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
 
          GroupMember newMembership = GroupMember.builder()
@@ -116,5 +122,22 @@ public class GroupMemberService {
      }
 
     /** Remove GroupMember */
+    public void deleteGroupMemberById (Integer groupId, Integer requestingUserId, Integer userId){
+        GroupMember requesterMembership = groupMemberRepo.findByGroupIdAndUserId(groupId, requestingUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "You're not a member of this group"));
+
+        // Check if Existing Member is admin
+        if(requesterMembership.getRole() != GroupRole.ADMIN){
+            throw  new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not an admin");
+        }
+
+
+        if (!groupMemberRepo.existsByGroupIdAndUserId(groupId, userId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Not Member of this group");
+        }
+
+        groupMemberRepo.deleteById(userId);
+
+    }
 
 }

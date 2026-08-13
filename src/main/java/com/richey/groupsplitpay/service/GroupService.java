@@ -3,9 +3,13 @@ package com.richey.groupsplitpay.service;
 import com.richey.groupsplitpay.dto.GroupRequest;
 import com.richey.groupsplitpay.dto.GroupResponse;
 import com.richey.groupsplitpay.model.Group;
+import com.richey.groupsplitpay.model.GroupMember;
+import com.richey.groupsplitpay.model.GroupRole;
 import com.richey.groupsplitpay.model.User;
+import com.richey.groupsplitpay.repo.GroupMemberRepo;
 import com.richey.groupsplitpay.repo.GroupRepo;
 import com.richey.groupsplitpay.repo.UserRepo;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,8 +24,9 @@ public class GroupService {
 
     private final GroupRepo groupRepo;
     private final UserRepo userRepo;
-
+    private final GroupMemberRepo groupMemberRepo;
     /** Create Group */
+    @Transactional
     public GroupResponse createGroup(GroupRequest request, Integer userId){
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -36,6 +41,10 @@ public class GroupService {
                            .user(user).build();
 
         Group savedGroup = groupRepo.save(group);
+
+        GroupMember newAdmin = GroupMember.builder().group(savedGroup).user(user).role(GroupRole.ADMIN).build();
+        groupMemberRepo.save(newAdmin);
+
 
         return new GroupResponse(
                 savedGroup.getId(),
