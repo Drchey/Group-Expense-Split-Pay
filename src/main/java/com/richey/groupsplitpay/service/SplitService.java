@@ -29,7 +29,6 @@ public class SplitService {
     private final UserRepo userRepo;
     private  final SecurityUtils securityUtils;
 
-    @Transactional
     public List<SplitResponse> getAllSplits(Integer expenseId){
 
         Integer currentUserId = securityUtils.getCurrentUserId();
@@ -60,7 +59,7 @@ public class SplitService {
     }
 
     // Get A Single Split
-    @Transactional
+
     public SplitResponse getSplitById(Integer splitId){
         Integer currentUserId = securityUtils.getCurrentUserId();
 
