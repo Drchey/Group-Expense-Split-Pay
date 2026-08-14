@@ -127,7 +127,7 @@ public class ExpenseService {
         );
     }
 
-    private void deleteExpense(Integer expenseId){
+    public void deleteExpense(Integer expenseId){
         Integer currentUserId = securityUtils.getCurrentUserId();
 
         Expense expense = expenseRepo.findById(expenseId).orElseThrow(
