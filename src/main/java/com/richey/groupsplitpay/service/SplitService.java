@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -104,6 +105,30 @@ public class SplitService {
         groupMemberRepo.findByGroupIdAndUserId(groupId, request.owedByUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not a member of this group"));
 
+
+        List<Split> existingSplits = splitRepo.findAllByExpenseId(expenseId);
+
+        // Rule: max 3 splits per expense
+        if (existingSplits.size() >= 3) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An expense cannot have more than 3 splits");
+        }
+
+        // Rule: new split amount can't exceed the expense's total on its own
+        if (request.amount().compareTo(expense.getTotalAmount()) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Split amount cannot exceed the total expense amount");
+        }
+
+        // Rule: sum of existing splits + new split can't exceed the expense's total
+        BigDecimal existingTotal = existingSplits.stream()
+                .map(Split::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal newTotal = existingTotal.add(request.amount());
+
+        if (newTotal.compareTo(expense.getTotalAmount()) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Total splits (" + newTotal + ") cannot exceed the expense amount (" + expense.getTotalAmount() + ")");
+        }
 
         Split split = Split.builder()
                 .expense(expense)
