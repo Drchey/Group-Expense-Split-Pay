@@ -56,8 +56,8 @@ spring.datasource.password=your_db_password
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
-jwt.secret=your_jwt_secret_key
-jwt.expiration=3600000
+app.jwt.secret=your_jwt_secret_key
+app.jwt.expirationms=3600000
 ```
 
 > **Note:** Never commit real secrets to version control. Use environment variables or a secrets manager in production.
